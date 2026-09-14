@@ -5,7 +5,6 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-// @ts-ignore — a área interna permanece em JavaScript por decisão do projeto.
 import InternalArea from "./pages/InternalArea";
 
 function Router() {

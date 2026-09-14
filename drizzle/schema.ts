@@ -25,4 +25,23 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+export const leadRecords = mysqlTable("lead_records", {
+  id: int("id").autoincrement().primaryKey(),
+  recordId: varchar("recordId", { length: 80 }).notNull().unique(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  status: mysqlEnum("status", ["aberto", "finalizado"]).default("aberto").notNull(),
+  category: mysqlEnum("category", ["empresa", "individual"]).notNull(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  companyName: varchar("companyName", { length: 255 }),
+  document: varchar("document", { length: 32 }).notNull(),
+  contact: varchar("contact", { length: 320 }).notNull(),
+  region: varchar("region", { length: 160 }).notNull(),
+  coursesJson: text("coursesJson").notNull(),
+  destination: mysqlEnum("destination", ["vendas", "coordenacao"]).notNull(),
+  companyLogoUrl: text("companyLogoUrl"),
+  protocol: varchar("protocol", { length: 64 }).notNull(),
+  summary: text("summary"),
+});
+
+export type LeadRecord = typeof leadRecords.$inferSelect;
+export type InsertLeadRecord = typeof leadRecords.$inferInsert;
