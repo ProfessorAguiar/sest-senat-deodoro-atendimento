@@ -2,59 +2,50 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 6%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 158 64% 45%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 158 64% 45%;
-    --radius: 0.75rem;
+    --background: 210 40% 98%;
+    --foreground: 215 40% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 40% 15%;
+    --primary: 211 83% 33%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 215 40% 15%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 18% 38%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 83%;
+    --input: 214 32% 83%;
+    --ring: 211 83% 33%;
+    --radius: 0.875rem;
   }
 }
 
+html { font-size: 18px; }
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   margin: 0;
-  padding: 0;
+  min-width: 320px;
   overflow-x: hidden;
-  background-color: #020617;
-  color: #f8fafc;
+  background: #f8fafc;
+  color: #18324b;
+  line-height: 1.55;
 }
-
-/* Ocultar barra de rolagem mantendo funcionalidade */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+button, input, textarea, select { font: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 3px solid #0ea5e9;
+  outline-offset: 3px;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Scrollbar personalizada sutil */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.8);
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: #eaf0f6; }
+::-webkit-scrollbar-thumb { background: #7d9bb6; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #155a91; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }

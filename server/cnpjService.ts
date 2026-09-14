@@ -27,6 +27,7 @@ export interface CnpjValidationResult {
   cep?: string;
   email?: string;
   telefone?: string;
+  logoUrl?: string;
   porte?: string;
   naturezaJuridica?: string;
   origem: "receita_ws" | "brasil_api" | "fallback_demonstracao";
@@ -34,6 +35,13 @@ export interface CnpjValidationResult {
 
 // Prefixo de CNAE ligados a transporte, logística e armazenagem (Divisões 49, 50, 51, 52, 53)
 const TRANSPORT_CNAE_PREFIXES = ["49", "50", "51", "52", "53"];
+
+function companyLogoUrl(email?: string, website?: string): string | undefined {
+  const raw = String(website || email || "").trim().toLowerCase();
+  const domain = raw.replace(/^https?:\/\//, "").split("/")[0].split("@").pop();
+  if (!domain || !domain.includes(".") || /gmail|hotmail|outlook|yahoo|icloud/.test(domain)) return undefined;
+  return `https://logo.clearbit.com/${domain}`;
+}
 
 export function cleanDocument(doc: string): string {
   return String(doc || "").replace(/\D/g, "");
@@ -117,6 +125,7 @@ export async function consultarCnpj(cnpjRaw: string): Promise<CnpjValidationResu
         cep: data.cep,
         email: data.email,
         telefone: data.ddd_telefone_1,
+        logoUrl: companyLogoUrl(data.email, data.website),
         porte: data.porte,
         naturezaJuridica: data.natureza_juridica,
         origem: "brasil_api"
@@ -175,6 +184,7 @@ export async function consultarCnpj(cnpjRaw: string): Promise<CnpjValidationResu
         cep: data.cep,
         email: data.email,
         telefone: data.telefone,
+        logoUrl: companyLogoUrl(data.email, data.website),
         porte: data.porte,
         origem: "receita_ws"
       };
@@ -216,6 +226,7 @@ export async function consultarCnpj(cnpjRaw: string): Promise<CnpjValidationResu
     logradouro: "Estrada do Camboatá",
     numero: "4000",
     cep: "21665-000",
+    logoUrl: undefined,
     origem: "fallback_demonstracao"
   };
 }

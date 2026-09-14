@@ -82,6 +82,7 @@ describe("Regras de Roteamento SEST SENAT Deodoro", () => {
       empresaNome: "Rio Cargas",
       documento: "01.234.567/0001-88",
       contato: "roberto@riocargas.com.br",
+      companyLogoUrl: "https://logo.clearbit.com/riocargas.com.br",
       cursosSelecionados: [{ id: "1", name: "Direção Defensiva", studentCount: 10 }],
       necessidadesIdentificadas: ["Reduzir sinistros"],
       nearestUnit: deodoroUnit
@@ -89,6 +90,7 @@ describe("Regras de Roteamento SEST SENAT Deodoro", () => {
 
     const card = buildTeamsAdaptiveCardText(payload, "coordenacao", "Grande cliente", "SS-2609-1234");
     expect(card).toContain("SEST SENAT DEODORO");
+    expect(card).toContain("https://logo.clearbit.com/riocargas.com.br");
     expect(card).toContain("Valores e propostas formais são enviados exclusivamente pelos canais oficiais");
   });
 });
