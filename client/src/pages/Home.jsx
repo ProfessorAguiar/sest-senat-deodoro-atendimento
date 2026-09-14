@@ -31,6 +31,7 @@ export default function Home() {
   const [submission, setSubmission] = useState(null);
   const [companyLogoUrl, setCompanyLogoUrl] = useState("");
   const [companyData, setCompanyData] = useState(null);
+  const [reviewStage, setReviewStage] = useState(false);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -90,6 +91,30 @@ export default function Home() {
     setSelectedCourses(current =>
       current.map(item => (item.id === id ? { ...item, studentCount } : item))
     );
+  const marketTrail = useMemo(() => {
+    const names = selectedCourses
+      .map(course => course.name.toLowerCase())
+      .join(" ");
+    if (/excel|power bi|dados|informática|tecnologia/.test(names))
+      return "Trilha sugerida: Excel para produtividade → Power BI para indicadores → Liderança para transformar dados em decisões.";
+    if (
+      /direção|motorista|condutor|transporte|empilhadeira|logística/.test(names)
+    )
+      return "Trilha sugerida: Direção segura → Operação eficiente → Gestão de frota e resultados.";
+    return "Trilha sugerida: Fundamentos profissionais → Eficiência operacional → Liderança e resultados para o mercado.";
+  }, [selectedCourses]);
+  const requestReview = () => {
+    if (!selectedCourses.length) return;
+    setReviewStage(true);
+    setMessages(current => [
+      ...current,
+      {
+        role: "assistant",
+        content: `Antes de finalizar, revise sua solicitação:\n\n${selectedCourses.map(course => `• **${course.name}** — ${course.studentCount} participante(s)`).join("\n")}\n\n${marketTrail}\n\nVocê está satisfeito com os cursos e quantidades? Podemos confirmar, alterar a quantidade, remover um curso ou buscar outra opção.`,
+        time: "Agora",
+      },
+    ]);
+  };
   const handleCnpjBlur = async () => {
     if (
       tipoAtendimento !== "empresa" ||
@@ -206,6 +231,7 @@ export default function Home() {
       },
     });
     setSubmission(result);
+    setReviewStage(false);
     setMessages(current => [
       ...current,
       {
@@ -435,13 +461,70 @@ export default function Home() {
                 />
               </label>
             </div>
+            {reviewStage && !submission && (
+              <div
+                className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4"
+                role="dialog"
+                aria-label="Revisão da solicitação"
+              >
+                <p className="font-bold text-[#155a91]">
+                  Está satisfeito com sua seleção?
+                </p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Você pode confirmar, alterar a quantidade, remover cursos ou
+                  buscar outro treinamento.
+                </p>
+                <p className="mt-3 text-sm font-semibold text-slate-800">
+                  {marketTrail}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setReviewStage(false)}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-700"
+                  >
+                    Alterar cursos/quantidades
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCourses(true);
+                      setReviewStage(false);
+                      document
+                        .getElementById("cursos")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                      setMessages(current => [
+                        ...current,
+                        {
+                          role: "assistant",
+                          content:
+                            "Claro. Escolha outro curso ou ajuste as quantidades. Depois, posso revisar tudo novamente.",
+                          time: "Agora",
+                        },
+                      ]);
+                    }}
+                    className="rounded-lg border border-[#155a91] bg-white px-3 py-2 font-bold text-[#155a91]"
+                  >
+                    Buscar outro curso
+                  </button>
+                  <button
+                    type="button"
+                    onClick={submitRequest}
+                    disabled={!nome || !contato || submitLead.isPending}
+                    className="rounded-lg bg-[#155a91] px-3 py-2 font-bold text-white disabled:opacity-40"
+                  >
+                    Sim, estou satisfeito — finalizar
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <span className="text-base text-slate-700">
                 <strong>{totalAlunos}</strong> vaga(s) selecionada(s)
               </span>
               <button
                 type="button"
-                onClick={submitRequest}
+                onClick={requestReview}
                 disabled={
                   !nome ||
                   !contato ||
@@ -450,7 +533,11 @@ export default function Home() {
                 }
                 className="rounded-xl bg-[#155a91] px-5 py-3 text-base font-extrabold text-white disabled:opacity-40"
               >
-                {submitLead.isPending ? "Enviando..." : "Enviar solicitação"}
+                {submitLead.isPending
+                  ? "Enviando..."
+                  : reviewStage
+                    ? "Revisão aberta"
+                    : "Revisar e continuar"}
                 <ChevronRight className="ml-1 inline h-5 w-5" />
               </button>
             </div>
@@ -482,6 +569,7 @@ export default function Home() {
                 },
               ]);
               setSubmission(null);
+              setReviewStage(false);
             }}
           />
         </aside>
