@@ -8,12 +8,20 @@ import { SEST_SENAT_UNITS, findNearestUnit } from "./sestSenatUnits";
 import { CATALOG_COURSES } from "./courseCatalog";
 import { dispatchLead } from "./teamsDispatcher";
 import { createCopilotConversation, postCopilotActivity, pollCopilotActivities, generateDeodoroAgentResponse } from "./copilotService";
+import { clearTestSession, issueTestSession, verifyTestPassword, TEST_LOGIN_EMAIL } from "./testAuth";
 
 export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),
+    testLogin: publicProcedure.input(z.object({ email: z.string().email(), password: z.string().min(1) })).mutation(async ({ input, ctx }) => {
+      if (input.email.toLowerCase() !== TEST_LOGIN_EMAIL.toLowerCase() || !verifyTestPassword(input.password)) {
+        throw new Error("Email ou senha de homologação inválidos.");
+      }
+      await issueTestSession(ctx.res, ctx.req);
+      return { success: true, email: TEST_LOGIN_EMAIL } as const;
+    }),
+    logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); clearTestSession(ctx.res, ctx.req); return { success: true } as const; }),
   }),
   courses: router({
     list: publicProcedure.input(z.object({ category: z.string().optional(), search: z.string().optional() }).optional()).query(({ input }) => { let items = [...CATALOG_COURSES]; if (input?.category && input.category !== "todos") items = items.filter(c => c.category === input.category); if (input?.search) { const s = input.search.toLowerCase(); items = items.filter(c => c.name.toLowerCase().includes(s) || c.description.toLowerCase().includes(s)); } return items; }),
