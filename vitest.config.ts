@@ -1,9 +1,15 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
+import react from "@vitejs/plugin-react";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 const templateRoot = path.resolve(import.meta.dirname);
 
 export default defineConfig({
+  plugins: [
+    react(),
+    cloudflare(),
+  ],
   root: templateRoot,
   resolve: {
     alias: {
