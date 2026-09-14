@@ -1,5 +1,6 @@
 import { timingSafeEqual, scryptSync } from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
+import { parse as parseCookies } from "cookie";
 import type { Response, Request } from "express";
 import type { User } from "../drizzle/schema";
 
@@ -29,6 +30,11 @@ function userForEmail(email: string): User {
 export function isTestAccount(email: string) { return Boolean(accounts[email.toLowerCase() as keyof typeof accounts]); }
 export function getTestUser(email: string) { return userForEmail(email); }
 
+function getTestCookie(req: Request) {
+  const parsed = req.cookies || parseCookies(req.headers.cookie || "");
+  return parsed[TEST_SESSION_COOKIE];
+}
+
 export async function issueTestSession(res: Response, req: Request, email: string) {
   const user = userForEmail(email);
   const token = await new SignJWT({ sub: user.openId, email: user.email, role: user.role, area: accounts[email.toLowerCase() as keyof typeof accounts].area, test: true }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("8h").sign(JWT_SECRET);
@@ -37,9 +43,9 @@ export async function issueTestSession(res: Response, req: Request, email: strin
 }
 
 export async function getTestUserFromRequest(req: Request): Promise<User | null> {
-  const token = req.cookies?.[TEST_SESSION_COOKIE];
+  const token = getTestCookie(req);
   if (!token) return null;
   try { const verified = await jwtVerify(token, JWT_SECRET); if (verified.payload.test !== true || typeof verified.payload.email !== "string" || !isTestAccount(verified.payload.email)) return null; return userForEmail(verified.payload.email); } catch { return null; }
 }
 
-export function clearTestSession(res: Response, req: Request) { if (!req.cookies?.[TEST_SESSION_COOKIE]) return; const secure = req.protocol === "https" || String(req.headers["x-forwarded-proto"] || "").includes("https"); res.clearCookie(TEST_SESSION_COOKIE, { httpOnly: true, sameSite: secure ? "none" : "lax", secure, path: "/" }); }
+export function clearTestSession(res: Response, req: Request) { if (!getTestCookie(req)) return; const secure = req.protocol === "https" || String(req.headers["x-forwarded-proto"] || "").includes("https"); res.clearCookie(TEST_SESSION_COOKIE, { httpOnly: true, sameSite: secure ? "none" : "lax", secure, path: "/" }); }
