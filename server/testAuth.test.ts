@@ -19,7 +19,7 @@ describe("Login e perfis de homologação", () => {
     const response = { cookie: (_name: string, value: string) => { cookie = value; } } as any;
     const request = { protocol: "https", headers: { "x-forwarded-proto": "https" } } as any;
     await issueTestSession(response, request, TEST_LOGIN_EMAIL);
-    const authenticated = await getTestUserFromRequest({ headers: { cookie: `sest_test_session=${cookie}` } } as any);
+    const authenticated = await getTestUserFromRequest({ headers: { cookie: `sest_test_session_v2=${cookie}` } } as any);
     expect(authenticated?.email).toBe(TEST_LOGIN_EMAIL);
     expect(authenticated?.role).toBe("user");
   });

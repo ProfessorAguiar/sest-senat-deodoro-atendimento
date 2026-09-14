@@ -4,7 +4,7 @@ import { parse as parseCookies } from "cookie";
 import type { Response, Request } from "express";
 import type { User } from "../drizzle/schema";
 
-export const TEST_SESSION_COOKIE = "sest_test_session";
+export const TEST_SESSION_COOKIE = "sest_test_session_v2";
 const TEST_PASSWORD_HASH = process.env.TEST_LOGIN_PASSWORD_HASH || "3930142bbdb03cadaa126dff20b134be:42005ceb967302c65283f7823d3a715b8866f7ce31cd5c609d303119425aaaa7bba198162652a64eb98f82cf34f586a8e630b60fe3e890833eb61a2fd83f1d98";
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "sest-senat-local-development-secret-change-in-production");
 

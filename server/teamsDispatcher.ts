@@ -24,18 +24,35 @@ export function buildTeamsAdaptiveCardText(payload: LeadSubmissionPayload, desti
 
 export async function dispatchLead(payload: LeadSubmissionPayload): Promise<DispatchResult> {
   const { destination, reason } = determineDestination(payload);
+  const totalAlunos = payload.cursosSelecionados.reduce((acc, c) => acc + (c.studentCount || 1), 0);
   const now = new Date();
   const protocolo = payload.protocolo || `SS-${now.getFullYear().toString().slice(2)}${(now.getMonth() + 1).toString().padStart(2, "0")}-${Math.floor(1000 + Math.random() * 9000)}`;
   const cardText = buildTeamsAdaptiveCardText(payload, destination, reason, protocolo);
   const webhookVendasUrl = process.env.TEAMS_WEBHOOK_VENDAS_URL || "https://default8609bc5b7aca4204b4b0ce9cf9002e.53.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/17/workflows/605d16f067dc4b92832aa3fbcd6eaddd/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=8nP3VHXBDho_HYuJpAiWpdjd8eZLYL7nwj8nWhU-yts";
   const webhookCoordenacaoUrl = process.env.TEAMS_WEBHOOK_COORDENACAO_URL || "";
   const targetUrl = destination === "coordenacao" && webhookCoordenacaoUrl ? webhookCoordenacaoUrl : webhookVendasUrl;
-  let teamsWebhookStatus: "enviado" | "simulado_ambiente" | "falha" = "simulado_ambiente";
+  let teamsWebhookStatus: "enviado" | "simulado_ambiente" | "falha" = targetUrl ? "falha" : "simulado_ambiente";
   try {
     if (targetUrl && !targetUrl.includes("COLE_AQUI")) {
-      await axios.post(targetUrl, { protocolo, destinatario: destination, clienteNome: payload.clienteNome, empresa: payload.empresaNome || "Atendimento individual", documento: payload.documento, contato: payload.contato, companyLogoUrl: payload.companyLogoUrl || null, unidade: payload.nearestUnit.name, totalAlunos: payload.cursosSelecionados.reduce((acc, c) => acc + (c.studentCount || 1), 0), cursos: payload.cursosSelecionados, resumoCompleto: cardText }, { timeout: 8000 });
+      await axios.post(targetUrl, {
+        protocolo,
+        nomeContato: payload.clienteNome,
+        empresa: payload.empresaNome || "Atendimento individual",
+        documento: payload.documento,
+        contatoRetorno: payload.contato,
+        necessidades: payload.necessidadesIdentificadas.join("; ") || "não informadas",
+        cursosSelecionados: payload.cursosSelecionados.map(c => `${c.name} (${c.studentCount} alunos)`).join("; "),
+        cursosApresentados: "Não informado",
+        participantes: String(totalAlunos),
+        prioridade: destination === "coordenacao" ? "Alta" : "Média",
+        unidade: payload.nearestUnit.name,
+        destinatario: destination,
+        companyLogoUrl: payload.companyLogoUrl || null,
+        resumoComercial: cardText,
+        resumoCompleto: cardText,
+      }, { timeout: 8000 });
       teamsWebhookStatus = "enviado";
     }
-  } catch { teamsWebhookStatus = "simulado_ambiente"; }
+    } catch (error: any) { console.error("[Teams] Falha ao enviar resumo:", error?.response?.data || error?.message); teamsWebhookStatus = "falha"; }
   return { success: true, destination, reason, protocolo, teamsWebhookStatus, message: destination === "coordenacao" ? `Sua demanda foi encaminhada à Coordenação. Protocolo: ${protocolo}.` : `Sua solicitação foi encaminhada ao Setor de Vendas. Protocolo: ${protocolo}.`, resumoCard: cardText };
 }
